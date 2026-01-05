@@ -2,6 +2,25 @@ const express = require('express');
 const router = express.Router();
 const Contact = require('../models/contact');
 
+// Basic auth for admin routes (GET /api/contacts)
+const ADMIN_USER = process.env.ADMIN_USER || 'admin';
+const ADMIN_PASS = process.env.ADMIN_PASS || 'password';
+
+function requireBasicAuth(req, res, next) {
+  const auth = req.headers.authorization;
+  if (!auth || !auth.startsWith('Basic ')) {
+    res.set('WWW-Authenticate', 'Basic realm="Restricted Area"');
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const base64Creds = auth.split(' ')[1] || '';
+  const [user, pass] = Buffer.from(base64Creds, 'base64').toString().split(':');
+  if (user === ADMIN_USER && pass === ADMIN_PASS) return next();
+
+  res.set('WWW-Authenticate', 'Basic realm="Restricted Area"');
+  return res.status(401).json({ error: 'Unauthorized' });
+}
+
 // Submit contact form
 router.post('/send', async (req, res) => {
   try {
@@ -34,7 +53,7 @@ router.post('/send', async (req, res) => {
 });
 
 // Get all contacts (admin only)
-router.get('/', async (req, res) => {
+router.get('/', requireBasicAuth, async (req, res) => {
   try {
     const contacts = await Contact.find().sort({ createdAt: -1 });
     res.json(contacts);

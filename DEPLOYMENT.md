@@ -29,3 +29,8 @@ Notes and next steps:
 - If you want to deploy to a cloud provider (e.g., AWS ECS, Azure, DigitalOcean App Platform, or Kubernetes), use the pushed images or adapt `docker-compose.yml` to a production-ready manifest.
 - Configure environment variables for production (e.g., `MONGODB_URI`, `PORT`, and CORS origins) via your hosting provider.
 - If you prefer serving the frontend via a CDN or a static host (Vercel, Netlify), deploy the `frontend/dist` build output instead of the Docker image.
+
+Security and admin notes:
+- `GET /api/contacts` returns all saved contact submissions. It is now protected by HTTP Basic Auth.
+- Set environment variables for admin access in production: `ADMIN_USER` and `ADMIN_PASS`.
+- Ensure `CORS_ORIGIN` allows your frontend host (e.g., `https://your-site.vercel.app`).
