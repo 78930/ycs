@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Contact = require('../models/contact');
+const Contact = require('../models/Contact');
 
 // Basic auth for admin routes (GET /api/contacts)
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
@@ -26,8 +26,21 @@ router.post('/send', async (req, res) => {
   try {
     const { name, email, phone, company, subject, message, service } = req.body;
 
+    // Presence validation
     if (!name || !email || !phone || !subject || !message) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: 'Missing required fields: name, email, phone, subject, message are required' });
+    }
+
+    // Basic format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^(\+91[-\s]?|0)?[6-9]\d{9}$/;
+
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({ error: 'Invalid Indian phone number format' });
     }
 
     const newContact = new Contact({
